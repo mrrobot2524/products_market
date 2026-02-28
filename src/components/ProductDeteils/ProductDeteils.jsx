@@ -35,7 +35,7 @@ const ProductDeteils = () => {
           alt="product"
           className="w-full max-w-125 object-cover transition-all duration-500"
         />
-
+        <p>Hello</p>
         <button
           onClick={prevSlide}
           className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white px-4 py-2 rounded-full shadow-md cursor-pointer"
