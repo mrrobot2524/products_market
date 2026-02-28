@@ -1,44 +1,39 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import PostItem from "../PostItem/PostItem";
 import { getPosts, getPostsByTag } from "../../api/post";
 import { useSearchParams } from "react-router-dom";
 import { useMemo } from "react";
 import Select from "../UI/Select/Select";
 import Pagination from "../UI/Pagination/Pagination";
+import { useQuery } from "../../hooks/useQuery";
 
 const PostList = () => {
-  const [posts, setPosts] = useState([]);
   const [searchParams] = useSearchParams();
   const page = searchParams.get("page");
   const tag = searchParams.get("tag");
   const [totalPosts, setTotalPosts] = useState();
   const [currentPage, setCurrentPage] = useState(page || 1);
   const [limit, setLimit] = useState(10);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState();
 
   const optNumber = [10, 25, 50, 100];
 
   let skip = (currentPage - 1) * limit;
 
-  useEffect(() => {
-    setLoading(true);
-    if (!tag) {
-      getPosts(skip, limit)
-        .then((data) => {
-          setPosts(data.posts);
-          setTotalPosts(data.total);
-        })
-        .catch((e) => setError(e))
-        .finally(() => setLoading(false));
-    } else {
-      getPostsByTag(tag)
-        .then((data) => {
-          setPosts(data.posts);
-        })
-        .finally(() => setLoading(false));
-    }
-  }, [tag, skip, limit]);
+  const {
+    error,
+    data: posts = [],
+    loading,
+  } = useQuery({
+    deps: [tag, skip, limit],
+    callback: () =>
+      tag
+        ? getPostsByTag(tag).then((data) => data.posts)
+        : getPosts().then((data) => {
+            setTotalPosts(data.total);
+            return data.posts;
+          }),
+  });
+
   const totalPages = Math.ceil(totalPosts / limit);
   const pages = useMemo(() => {
     return Array.from({ length: totalPages });
